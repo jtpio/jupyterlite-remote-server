@@ -6,13 +6,6 @@ A JupyterLite extension that connects to a remote Jupyter server for all service
 
 This extension replaces JupyterLite's in-browser service implementations with standard JupyterLab service managers that communicate with a remote Jupyter server. This allows you to run a static JupyterLite frontend while using a real Jupyter server for all backend operations.
 
-## Features
-
-- **Remote Kernels**: Run kernels on a remote Jupyter server instead of in-browser (pyodide/xeus)
-- **Remote Contents**: Store files on the remote server instead of browser storage
-- **Remote Settings**: Use server-side settings instead of browser storage
-- **All Standard Services**: Sessions, workspaces, terminals, nbconvert, events, and more
-
 ## How It Works
 
 The extension provides ServiceManagerPlugins that:
@@ -94,21 +87,21 @@ See the `demo/` directory for a complete example configuration.
 
 This extension provides the following ServiceManagerPlugins:
 
-| Plugin                   | Token               | Description                                 |
-| ------------------------ | ------------------- | ------------------------------------------- |
-| `server-settings`        | `IServerSettings`   | Dynamic server connection settings          |
-| `default-drive`          | `IDefaultDrive`     | Server-connected file drive                 |
-| `contents-manager`       | `IContentsManager`  | File contents management                    |
-| `kernel-manager`         | `IKernelManager`    | Kernel lifecycle management                 |
-| `kernel-spec-manager`    | `IKernelSpecManager`| Kernel specifications with URL rewriting    |
-| `session-manager`        | `ISessionManager`   | Session management                          |
-| `setting-manager`        | `ISettingManager`   | User settings management                    |
-| `workspace-manager`      | `IWorkspaceManager` | Workspace persistence                       |
-| `user-manager`           | `IUserManager`      | User information                            |
-| `event-manager`          | `IEventManager`     | Server events                               |
-| `config-section-manager` | `IConfigSectionManager` | Config section management              |
-| `nbconvert-manager`      | `INbConvertManager` | Notebook conversion                         |
-| `terminal-manager`       | `ITerminalManager`  | Terminal sessions                           |
+| Plugin                   | Token                   | Description                              |
+| ------------------------ | ----------------------- | ---------------------------------------- |
+| `server-settings`        | `IServerSettings`       | Dynamic server connection settings       |
+| `default-drive`          | `IDefaultDrive`         | Server-connected file drive              |
+| `contents-manager`       | `IContentsManager`      | File contents management                 |
+| `kernel-manager`         | `IKernelManager`        | Kernel lifecycle management              |
+| `kernel-spec-manager`    | `IKernelSpecManager`    | Kernel specifications with URL rewriting |
+| `session-manager`        | `ISessionManager`       | Session management                       |
+| `setting-manager`        | `ISettingManager`       | User settings management                 |
+| `workspace-manager`      | `IWorkspaceManager`     | Workspace persistence                    |
+| `user-manager`           | `IUserManager`          | User information                         |
+| `event-manager`          | `IEventManager`         | Server events                            |
+| `config-section-manager` | `IConfigSectionManager` | Config section management                |
+| `nbconvert-manager`      | `INbConvertManager`     | Notebook conversion                      |
+| `terminal-manager`       | `ITerminalManager`      | Terminal sessions                        |
 
 ## Requirements
 
