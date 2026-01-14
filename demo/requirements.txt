@@ -1,0 +1,4 @@
+jupyterlab-git
+jupyterlite-core
+jupyter-server
+jupyterlite-remote-server
