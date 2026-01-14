@@ -1,5 +1,6 @@
 {
     "name": "jupyterlite-remote-server",
+    "private": true,
     "version": "0.1.0",
     "description": "JupyterLite extension to connect to a remote Jupyter server",
     "keywords": [
