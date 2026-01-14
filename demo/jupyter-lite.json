@@ -1,0 +1,25 @@
+{
+  "jupyter-lite-schema-version": 0,
+  "jupyter-config-data": {
+    "appName": "JupyterLite Remote Server",
+    "remoteBaseUrl": "http://localhost:8888/",
+    "remoteToken": "my-token",
+    "disabledExtensions": [
+      "@jupyterlite/services-extension:config-section-manager",
+      "@jupyterlite/services-extension:default-drive",
+      "@jupyterlite/services-extension:event-manager",
+      "@jupyterlite/services-extension:exporters",
+      "@jupyterlite/services-extension:kernel-manager",
+      "@jupyterlite/services-extension:kernel-client",
+      "@jupyterlite/services-extension:kernel-spec-client",
+      "@jupyterlite/services-extension:kernel-spec-manager",
+      "@jupyterlite/services-extension:kernel-specs",
+      "@jupyterlite/services-extension:localforage",
+      "@jupyterlite/services-extension:nbconvert-manager",
+      "@jupyterlite/services-extension:session-manager",
+      "@jupyterlite/services-extension:settings",
+      "@jupyterlite/services-extension:user-manager",
+      "@jupyterlite/services-extension:workspace-manager"
+    ]
+  }
+}

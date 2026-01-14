@@ -1,0 +1,17 @@
+# Changes here will be overwritten by Copier; NEVER EDIT MANUALLY
+_commit: v4.5.1
+_src_path: https://github.com/jupyterlab/extension-template
+author_email: ''
+author_name: Jeremy Tuloup
+create_claude_symlink: true
+create_gemini_symlink: false
+has_ai_rules: true
+has_binder: false
+has_settings: false
+kind: frontend
+labextension_name: jupyterlite-dynamic-server-settings
+project_short_description: Dynamic Jupyter Server settings
+python_name: jupyterlite_dynamic_server_settings
+repository: https://github.com/jtpio/jupyterlite-dynamic-server-settings
+test: false
+
