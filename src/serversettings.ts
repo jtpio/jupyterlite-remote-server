@@ -5,7 +5,7 @@ import { PageConfig, URLExt } from '@jupyterlab/coreutils';
 import { ServerConnection } from '@jupyterlab/services';
 
 /**
- * A dynamic server settings implementation that reads baseUrl and token
+ * A remote server settings implementation that reads baseUrl and token
  * from PageConfig on each access using the remoteBaseUrl and remoteToken options.
  *
  * This class implements the ServerConnection.ISettings interface and is designed
@@ -18,7 +18,7 @@ import { ServerConnection } from '@jupyterlab/services';
  * - `appUrl`: The JupyterLab application URL
  * - `appendToken`: Whether to append token to WebSocket URLs (auto-detected if not set)
  */
-export class DynamicServerSettings implements ServerConnection.ISettings {
+export class RemoteServerSettings implements ServerConnection.ISettings {
   constructor() {
     this._defaults = ServerConnection.makeSettings();
   }

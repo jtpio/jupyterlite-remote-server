@@ -1,4 +1,4 @@
-# Making a new release of jupyterlite_dynamic_server_settings
+# Making a new release of jupyterlite_remote_server
 
 The extension can be published to `PyPI` and `npm` manually or using the [Jupyter Releaser](https://github.com/jupyter-server/jupyter_releaser).
 

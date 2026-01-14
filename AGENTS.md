@@ -550,7 +550,7 @@ try {
 **✅ Do**: Namespace all CSS in `style/index.css`
 
 ```css
-.jp-jupyterlite-dynamic-server-settings-widget {
+.jp-jupyterlite-remote-server-widget {
   padding: 8px;
 }
 ```
@@ -580,7 +580,7 @@ Use these patterns consistently throughout your code:
 - **Command IDs** (in `src/commands.ts` or `src/index.ts`): `'jupyterlite_remote_server:command-name'`
   - For multiple commands, create `src/commands.ts` with a centralized `COMMANDS` mapping
   - For 1-2 commands, define directly in `src/index.ts`
-- **CSS classes** (in `style/index.css`): `.jp-jupyterlite-dynamic-server-settings-ClassName`
+- **CSS classes** (in `style/index.css`): `.jp-jupyterlite-remote-server-ClassName`
 
 ### Essential Commands
 

@@ -9,9 +9,9 @@ has_ai_rules: true
 has_binder: false
 has_settings: false
 kind: frontend
-labextension_name: jupyterlite-dynamic-server-settings
-project_short_description: Dynamic Jupyter Server settings
-python_name: jupyterlite_dynamic_server_settings
-repository: https://github.com/jtpio/jupyterlite-dynamic-server-settings
+labextension_name: jupyterlite-remote-server
+project_short_description: JupyterLite extension to connect to a remote Jupyter server
+python_name: jupyterlite_remote_server
+repository: https://github.com/jtpio/jupyterlite-remote-server
 test: false
 
