@@ -65,17 +65,22 @@ export class RemoteServerSettings implements ServerConnection.ISettings {
 
   /**
    * Whether to append a token to a Websocket url.
+   *
+   * In cross-origin scenarios (e.g., JupyterLite connecting to a remote server),
+   * cookies won't be sent, so we must append the token to WebSocket URLs.
    */
   get appendToken(): boolean {
     const appendTokenConfig = PageConfig.getOption('appendToken').toLowerCase();
     if (appendTokenConfig === '') {
-      const baseUrl = this.baseUrl;
-      return (
-        typeof window === 'undefined' ||
-        (typeof process !== 'undefined' &&
-          process?.env?.JEST_WORKER_ID !== undefined) ||
-        URLExt.getHostName(baseUrl) !== URLExt.getHostName(this.wsUrl)
-      );
+      // If running outside browser, always append token (safe default)
+      if (typeof window === 'undefined') {
+        return true;
+      }
+      // In browser: compare remote server hostname against current window location
+      // If they differ, we're in a cross-origin scenario and must append the token
+      const remoteHost = URLExt.getHostName(this.baseUrl);
+      const currentHost = window.location.host;
+      return remoteHost !== currentHost;
     }
     return appendTokenConfig === 'true';
   }
