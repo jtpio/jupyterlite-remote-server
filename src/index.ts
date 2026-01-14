@@ -42,10 +42,10 @@ import {
 } from '@jupyterlab/services';
 
 import { RemoteKernelSpecManager } from './kernelspec';
-import { DynamicServerSettings } from './serversettings';
+import { RemoteServerSettings } from './serversettings';
 
 /**
- * The server settings plugin providing dynamic settings
+ * The server settings plugin providing remote server settings
  * that read baseUrl and token from PageConfig.
  *
  * This plugin reads configuration from PageConfig at runtime:
@@ -56,12 +56,12 @@ import { DynamicServerSettings } from './serversettings';
  */
 const serverSettingsPlugin: ServiceManagerPlugin<ServerConnection.ISettings> = {
   id: 'jupyterlite-remote-server:server-settings',
-  description: 'Provides dynamic server settings from PageConfig.',
+  description: 'Provides remote server settings from PageConfig.',
   autoStart: true,
   provides: IServerSettings,
   activate: (): ServerConnection.ISettings => {
-    console.log('Activating dynamic server settings plugin');
-    return new DynamicServerSettings();
+    console.log('Activating remote server settings plugin');
+    return new RemoteServerSettings();
   }
 };
 
@@ -307,5 +307,5 @@ const plugins = [
 
 export default plugins;
 
-// Re-export the DynamicServerSettings class for direct use
-export { DynamicServerSettings } from './serversettings';
+// Re-export the RemoteServerSettings class for external use
+export { RemoteServerSettings } from './serversettings';

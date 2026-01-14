@@ -89,7 +89,7 @@ This extension provides the following ServiceManagerPlugins:
 
 | Plugin                   | Token                   | Description                              |
 | ------------------------ | ----------------------- | ---------------------------------------- |
-| `server-settings`        | `IServerSettings`       | Dynamic server connection settings       |
+| `server-settings`        | `IServerSettings`       | Remote server connection settings        |
 | `default-drive`          | `IDefaultDrive`         | Server-connected file drive              |
 | `contents-manager`       | `IContentsManager`      | File contents management                 |
 | `kernel-manager`         | `IKernelManager`        | Kernel lifecycle management              |
