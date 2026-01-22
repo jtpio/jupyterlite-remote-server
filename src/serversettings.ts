@@ -5,28 +5,91 @@ import { PageConfig, URLExt } from '@jupyterlab/coreutils';
 import { ServerConnection } from '@jupyterlab/services';
 
 /**
+ * Service types that can have separate server configurations.
+ *
+ * Each service type can have its own base URL and token configuration,
+ * falling back to the default `remoteBaseUrl` and `remoteToken` if not specified.
+ */
+export type ServiceType =
+  | 'default'
+  | 'contents'
+  | 'kernels'
+  | 'settings'
+  | 'workspaces'
+  | 'terminals'
+  | 'users'
+  | 'events'
+  | 'nbconvert'
+  | 'configSection';
+
+/**
+ * Options for creating RemoteServerSettings.
+ */
+export interface IRemoteServerSettingsOptions {
+  /**
+   * The service type for these settings.
+   *
+   * Determines which PageConfig options to read for base URL and token.
+   * Falls back to default options if service-specific options are not set.
+   *
+   * @default 'default'
+   */
+  serviceType?: ServiceType;
+}
+
+/**
  * A remote server settings implementation that reads baseUrl and token
- * from PageConfig on each access using the remoteBaseUrl and remoteToken options.
+ * from PageConfig on each access.
  *
  * This class implements the ServerConnection.ISettings interface and is designed
  * for use with JupyterLite or other scenarios where server connection settings
  * need to be determined at runtime rather than at initialization time.
  *
  * Configuration is read from PageConfig using these options:
+ *
+ * Default (fallback) options:
  * - `remoteBaseUrl`: The base URL of the remote Jupyter server
  * - `remoteToken`: The authentication token for the remote server
+ *
+ * Service-specific options (optional, fallback to defaults if not set):
+ * - `remoteContentsBaseUrl` / `remoteContentsToken`: For contents/files services
+ * - `remoteKernelsBaseUrl` / `remoteKernelsToken`: For kernel-related services
+ * - `remoteSettingsBaseUrl` / `remoteSettingsToken`: For settings services
+ * - `remoteWorkspacesBaseUrl` / `remoteWorkspacesToken`: For workspace services
+ * - `remoteTerminalsBaseUrl` / `remoteTerminalsToken`: For terminal services
+ * - `remoteUsersBaseUrl` / `remoteUsersToken`: For user services
+ * - `remoteEventsBaseUrl` / `remoteEventsToken`: For event services
+ * - `remoteNbconvertBaseUrl` / `remoteNbconvertToken`: For nbconvert services
+ * - `remoteConfigSectionBaseUrl` / `remoteConfigSectionToken`: For config section services
+ *
+ * Common options:
  * - `appUrl`: The JupyterLab application URL
  * - `appendToken`: Whether to append token to WebSocket URLs (auto-detected if not set)
  */
 export class RemoteServerSettings implements ServerConnection.ISettings {
-  constructor() {
+  constructor(options: IRemoteServerSettingsOptions = {}) {
+    this._serviceType = options.serviceType ?? 'default';
     this._defaults = ServerConnection.makeSettings();
   }
 
   /**
-   * The base url of the server, read dynamically from PageConfig's remoteBaseUrl.
+   * The service type for these settings.
+   */
+  get serviceType(): ServiceType {
+    return this._serviceType;
+  }
+
+  /**
+   * The base url of the server, read dynamically from PageConfig.
+   *
+   * First checks for a service-specific URL (e.g., `remoteContentsBaseUrl`),
+   * then falls back to `remoteBaseUrl`.
    */
   get baseUrl(): string {
+    const serviceUrl = this._getServiceOption('BaseUrl');
+    if (serviceUrl) {
+      return serviceUrl;
+    }
     return PageConfig.getOption('remoteBaseUrl');
   }
 
@@ -38,7 +101,7 @@ export class RemoteServerSettings implements ServerConnection.ISettings {
   }
 
   /**
-   * The base ws url of the server, derived from remoteBaseUrl.
+   * The base ws url of the server, derived from baseUrl.
    */
   get wsUrl(): string {
     const baseUrl = this.baseUrl;
@@ -57,9 +120,16 @@ export class RemoteServerSettings implements ServerConnection.ISettings {
   }
 
   /**
-   * The authentication token for requests, read dynamically from PageConfig's remoteToken.
+   * The authentication token for requests, read dynamically from PageConfig.
+   *
+   * First checks for a service-specific token (e.g., `remoteContentsToken`),
+   * then falls back to `remoteToken`.
    */
   get token(): string {
+    const serviceToken = this._getServiceOption('Token');
+    if (serviceToken) {
+      return serviceToken;
+    }
     return PageConfig.getOption('remoteToken');
   }
 
@@ -120,5 +190,23 @@ export class RemoteServerSettings implements ServerConnection.ISettings {
     return this._defaults.serializer;
   }
 
+  /**
+   * Get a service-specific PageConfig option.
+   *
+   * @param suffix - The option suffix (e.g., 'BaseUrl', 'Token')
+   * @returns The option value, or empty string if not set or service type is 'default'
+   */
+  private _getServiceOption(suffix: string): string {
+    if (this._serviceType === 'default') {
+      return '';
+    }
+    // Build option name: e.g., 'remoteContentsBaseUrl', 'remoteKernelsToken'
+    const capitalizedType =
+      this._serviceType.charAt(0).toUpperCase() + this._serviceType.slice(1);
+    const optionName = `remote${capitalizedType}${suffix}`;
+    return PageConfig.getOption(optionName);
+  }
+
+  private _serviceType: ServiceType;
   private _defaults: ServerConnection.ISettings;
 }
