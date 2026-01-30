@@ -5,12 +5,19 @@ import { URLExt } from '@jupyterlab/coreutils';
 import type { KernelSpec, ServerConnection } from '@jupyterlab/services';
 import { BaseManager, KernelSpecManager } from '@jupyterlab/services';
 
+import { Poll } from '@lumino/polling';
 import type { ISignal } from '@lumino/signaling';
 import { Signal } from '@lumino/signaling';
 
 /**
  * A kernel spec manager that rewrites resource URLs to use absolute paths
  * pointing to the remote Jupyter server.
+ *
+ * This manager also handles graceful degradation when the remote server
+ * is not yet available:
+ * - Returns empty specs until the server responds
+ * - Polls periodically to check for server availability
+ * - Emits specsChanged when specs become available
  *
  * This is necessary because when running in JupyterLite, relative resource URLs
  * like `/kernelspecs/python3/logo-svg.svg` resolve to the JupyterLite origin
@@ -25,6 +32,8 @@ export class RemoteKernelSpecManager
     super(options);
     const { serverSettings } = options;
     this._serverSettings = serverSettings;
+
+    // Create the internal manager but don't let it block our initialization
     this._kernelSpecManager = new KernelSpecManager({
       serverSettings
     });
@@ -32,10 +41,29 @@ export class RemoteKernelSpecManager
     // Listen for specs changes on the internal manager and rewrite URLs
     this._kernelSpecManager.specsChanged.connect(this._onSpecsChanged, this);
 
-    // Initialize specs when the internal manager becomes ready
-    this._kernelSpecManager.ready.then(() => {
-      this._rewriteSpecs();
+    // Listen for connection failures
+    this._kernelSpecManager.connectionFailure.connect((sender, error) => {
+      this._connectionFailure.emit(error);
     });
+
+    // Set up polling for specs refresh
+    const pollInterval = options.pollInterval ?? 10000; // 10 seconds default
+    const maxPollInterval = options.maxPollInterval ?? 300000; // 5 minutes max
+
+    this._poll = new Poll({
+      auto: false, // Don't auto-start, we'll start after initial attempt
+      factory: () => this._pollSpecs(),
+      frequency: {
+        interval: pollInterval,
+        backoff: true,
+        max: maxPollInterval
+      },
+      name: '@jupyterlite-remote-server:KernelSpecManager#specs',
+      standby: options.standby ?? 'when-hidden'
+    });
+
+    // Initialize: try to get specs, but don't block
+    this._ready = this._initialize();
   }
 
   /**
@@ -47,20 +75,28 @@ export class RemoteKernelSpecManager
 
   /**
    * Test whether the manager is ready.
+   *
+   * The manager is considered ready even if the server is not available,
+   * to support graceful degradation.
    */
   get isReady(): boolean {
-    return this._kernelSpecManager.isReady;
+    return this._isReady;
   }
 
   /**
    * A promise that fulfills when the manager is ready.
+   *
+   * This resolves quickly even if the server is not available,
+   * to avoid blocking JupyterLite startup.
    */
   get ready(): Promise<void> {
-    return this._kernelSpecManager.ready;
+    return this._ready;
   }
 
   /**
    * Get the kernel specs with rewritten resource URLs.
+   *
+   * Returns null if the server has not yet responded.
    */
   get specs(): KernelSpec.ISpecModels | null {
     return this._specs;
@@ -80,8 +116,62 @@ export class RemoteKernelSpecManager
    * to use absolute paths pointing to the remote server.
    */
   async refreshSpecs(): Promise<void> {
-    await this._kernelSpecManager.refreshSpecs();
-    this._rewriteSpecs();
+    await this._fetchSpecs();
+  }
+
+  /**
+   * Dispose of the resources used by the manager.
+   */
+  dispose(): void {
+    if (this.isDisposed) {
+      return;
+    }
+    this._poll.dispose();
+    this._kernelSpecManager.dispose();
+    super.dispose();
+  }
+
+  /**
+   * Initialize the manager.
+   *
+   * Attempts to fetch specs but doesn't fail if server is unavailable.
+   */
+  private async _initialize(): Promise<void> {
+    try {
+      await this._fetchSpecs();
+    } catch {
+      // Server not available yet - that's okay, polling will retry
+    }
+
+    // Mark as ready regardless of whether we got specs
+    this._isReady = true;
+
+    // Start polling for updates
+    void this._poll.start();
+  }
+
+  /**
+   * Poll for specs - called periodically by the Poll instance.
+   */
+  private async _pollSpecs(): Promise<void> {
+    await this._fetchSpecs();
+  }
+
+  /**
+   * Fetch specs from the server.
+   */
+  private async _fetchSpecs(): Promise<void> {
+    const baseUrl = this._serverSettings?.baseUrl;
+    if (!baseUrl) {
+      return;
+    }
+
+    try {
+      await this._kernelSpecManager.refreshSpecs();
+      this._rewriteSpecs();
+    } catch {
+      // Server not available - will retry on next poll
+    }
   }
 
   /**
@@ -141,6 +231,9 @@ export class RemoteKernelSpecManager
 
   private _serverSettings: ServerConnection.ISettings | undefined;
   private _kernelSpecManager: KernelSpec.IManager;
+  private _poll: Poll;
+  private _isReady = false;
+  private _ready: Promise<void>;
   private _connectionFailure = new Signal<this, Error>(this);
   private _specsChanged = new Signal<this, KernelSpec.ISpecModels>(this);
   private _specs: KernelSpec.ISpecModels | null = null;
@@ -150,10 +243,28 @@ export namespace RemoteKernelSpecManager {
   /**
    * The options used to initialize a remote kernel spec manager.
    */
-  export interface IOptions {
+  export interface IOptions extends BaseManager.IOptions {
     /**
      * The server settings for connecting to the remote server.
      */
     serverSettings?: ServerConnection.ISettings;
+
+    /**
+     * The initial polling interval in milliseconds.
+     * Defaults to 10000 (10 seconds).
+     */
+    pollInterval?: number;
+
+    /**
+     * The maximum polling interval in milliseconds after backoff.
+     * Defaults to 300000 (5 minutes).
+     */
+    maxPollInterval?: number;
+
+    /**
+     * When the manager stops polling the API.
+     * Defaults to 'when-hidden'.
+     */
+    standby?: Poll.Standby | (() => boolean | Poll.Standby);
   }
 }

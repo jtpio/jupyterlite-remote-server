@@ -18,31 +18,23 @@ import {
   INbConvertManager,
   IServerSettings,
   ISessionManager,
-  ISettingManager,
   ITerminalManager,
-  IUserManager,
-  IWorkspaceManager,
   Kernel,
-  KernelManager,
   KernelSpec,
   NbConvert,
   NbConvertManager,
   ServerConnection,
   ServiceManagerPlugin,
   Session,
-  SessionManager,
-  Setting,
-  SettingManager,
-  Terminal,
-  TerminalManager,
-  User,
-  UserManager,
-  Workspace,
-  WorkspaceManager
+  Terminal
 } from '@jupyterlab/services';
 
+import { RemoteKernelManager } from './kernel';
 import { RemoteKernelSpecManager } from './kernelspec';
 import { RemoteServerSettings } from './serversettings';
+import { RemoteSessionManager } from './session';
+import { RemoteTerminalManager } from './terminal';
+import { themesPlugin } from './themes';
 
 /**
  * The server settings plugin providing remote server settings
@@ -64,7 +56,6 @@ const serverSettingsPlugin: ServiceManagerPlugin<ServerConnection.ISettings> = {
   autoStart: true,
   provides: IServerSettings,
   activate: (): ServerConnection.ISettings => {
-    console.log('Activating remote server settings plugin');
     return new RemoteServerSettings({ serviceType: 'default' });
   }
 };
@@ -100,7 +91,7 @@ const contentsManagerPlugin: ServiceManagerPlugin<Contents.IManager> = {
   autoStart: true,
   provides: IContentsManager,
   requires: [IDefaultDrive],
-  activate: (_: null, defaultDrive: Contents.IDrive): Contents.IManager => {
+  activate: (app: null, defaultDrive: Contents.IDrive): Contents.IManager => {
     const serverSettings = new RemoteServerSettings({
       serviceType: 'contents'
     });
@@ -112,27 +103,36 @@ const contentsManagerPlugin: ServiceManagerPlugin<Contents.IManager> = {
 };
 
 /**
- * The kernel manager plugin.
+ * The kernel manager plugin with polling support.
+ *
+ * This manager handles graceful degradation when the remote server
+ * is not yet available:
+ * - Returns empty running kernels until the server responds
+ * - Polls periodically to refresh running kernels
+ * - Does not block initialization on server availability
  *
  * Uses `remoteKernelsBaseUrl` and `remoteKernelsToken` if configured,
  * otherwise falls back to `remoteBaseUrl` and `remoteToken`.
  */
 const kernelManagerPlugin: ServiceManagerPlugin<Kernel.IManager> = {
   id: 'jupyterlite-remote-server:kernel-manager',
-  description: 'Provides the kernel manager.',
+  description: 'Provides the kernel manager with polling support.',
   autoStart: true,
   provides: IKernelManager,
   activate: (): Kernel.IManager => {
     const serverSettings = new RemoteServerSettings({ serviceType: 'kernels' });
-    return new KernelManager({ serverSettings });
+    return new RemoteKernelManager({ serverSettings });
   }
 };
 
 /**
- * The kernel spec manager plugin.
+ * The kernel spec manager plugin with polling support.
  *
- * Uses RemoteKernelSpecManager to rewrite resource URLs to absolute paths
- * pointing to the remote server, so kernel logos load correctly.
+ * This manager handles graceful degradation when the remote server
+ * is not yet available:
+ * - Returns empty specs until the server responds
+ * - Polls periodically to check for server availability
+ * - Rewrites resource URLs to absolute paths pointing to the remote server
  *
  * Uses `remoteKernelsBaseUrl` and `remoteKernelsToken` if configured,
  * otherwise falls back to `remoteBaseUrl` and `remoteToken`.
@@ -140,7 +140,7 @@ const kernelManagerPlugin: ServiceManagerPlugin<Kernel.IManager> = {
 const kernelSpecManagerPlugin: ServiceManagerPlugin<KernelSpec.IManager> = {
   id: 'jupyterlite-remote-server:kernel-spec-manager',
   description:
-    'Provides the kernel spec manager with remote resource URL rewriting.',
+    'Provides the kernel spec manager with polling and remote resource URL rewriting.',
   autoStart: true,
   provides: IKernelSpecManager,
   activate: (): KernelSpec.IManager => {
@@ -150,80 +150,34 @@ const kernelSpecManagerPlugin: ServiceManagerPlugin<KernelSpec.IManager> = {
 };
 
 /**
- * The session manager plugin.
+ * The session manager plugin with polling support.
+ *
+ * This manager handles graceful degradation when the remote server
+ * is not yet available:
+ * - Returns empty running sessions until the server responds
+ * - Polls periodically to refresh running sessions
+ * - Does not block initialization on server availability
  *
  * Uses `remoteKernelsBaseUrl` and `remoteKernelsToken` if configured,
  * otherwise falls back to `remoteBaseUrl` and `remoteToken`.
  */
 const sessionManagerPlugin: ServiceManagerPlugin<Session.IManager> = {
   id: 'jupyterlite-remote-server:session-manager',
-  description: 'Provides the session manager.',
+  description: 'Provides the session manager with polling support.',
   autoStart: true,
   provides: ISessionManager,
   requires: [IKernelManager],
-  activate: (_: null, kernelManager: Kernel.IManager): Session.IManager => {
+  activate: (app: null, kernelManager: Kernel.IManager): Session.IManager => {
     const serverSettings = new RemoteServerSettings({ serviceType: 'kernels' });
-    return new SessionManager({
+    return new RemoteSessionManager({
       kernelManager,
       serverSettings
     });
   }
 };
 
-/**
- * The setting manager plugin.
- *
- * Uses `remoteSettingsBaseUrl` and `remoteSettingsToken` if configured,
- * otherwise falls back to `remoteBaseUrl` and `remoteToken`.
- */
-const settingManagerPlugin: ServiceManagerPlugin<Setting.IManager> = {
-  id: 'jupyterlite-remote-server:setting-manager',
-  description: 'Provides the setting manager.',
-  autoStart: true,
-  provides: ISettingManager,
-  activate: (): Setting.IManager => {
-    const serverSettings = new RemoteServerSettings({
-      serviceType: 'settings'
-    });
-    return new SettingManager({ serverSettings });
-  }
-};
 
-/**
- * The workspace manager plugin.
- *
- * Uses `remoteWorkspacesBaseUrl` and `remoteWorkspacesToken` if configured,
- * otherwise falls back to `remoteBaseUrl` and `remoteToken`.
- */
-const workspaceManagerPlugin: ServiceManagerPlugin<Workspace.IManager> = {
-  id: 'jupyterlite-remote-server:workspace-manager',
-  description: 'Provides the workspace manager.',
-  autoStart: true,
-  provides: IWorkspaceManager,
-  activate: (): Workspace.IManager => {
-    const serverSettings = new RemoteServerSettings({
-      serviceType: 'workspaces'
-    });
-    return new WorkspaceManager({ serverSettings });
-  }
-};
 
-/**
- * The user manager plugin.
- *
- * Uses `remoteUsersBaseUrl` and `remoteUsersToken` if configured,
- * otherwise falls back to `remoteBaseUrl` and `remoteToken`.
- */
-const userManagerPlugin: ServiceManagerPlugin<User.IManager> = {
-  id: 'jupyterlite-remote-server:user-manager',
-  description: 'Provides the user manager.',
-  autoStart: true,
-  provides: IUserManager,
-  activate: (): User.IManager => {
-    const serverSettings = new RemoteServerSettings({ serviceType: 'users' });
-    return new UserManager({ serverSettings });
-  }
-};
 
 /**
  * The event manager plugin.
@@ -285,21 +239,27 @@ const nbConvertManagerPlugin: ServiceManagerPlugin<NbConvert.IManager> = {
 };
 
 /**
- * The terminal manager plugin.
+ * The terminal manager plugin with polling support.
+ *
+ * This manager handles graceful degradation when the remote server
+ * is not yet available:
+ * - Returns empty running terminals until the server responds
+ * - Polls periodically to refresh running terminals
+ * - Does not block initialization on server availability
  *
  * Uses `remoteTerminalsBaseUrl` and `remoteTerminalsToken` if configured,
  * otherwise falls back to `remoteBaseUrl` and `remoteToken`.
  */
 const terminalManagerPlugin: ServiceManagerPlugin<Terminal.IManager> = {
   id: 'jupyterlite-remote-server:terminal-manager',
-  description: 'Provides the terminal manager.',
+  description: 'Provides the terminal manager with polling support.',
   autoStart: true,
   provides: ITerminalManager,
   activate: (): Terminal.IManager => {
     const serverSettings = new RemoteServerSettings({
       serviceType: 'terminals'
     });
-    return new TerminalManager({ serverSettings });
+    return new RemoteTerminalManager({ serverSettings });
   }
 };
 
@@ -313,13 +273,11 @@ const plugins = [
   kernelManagerPlugin,
   kernelSpecManagerPlugin,
   sessionManagerPlugin,
-  settingManagerPlugin,
-  workspaceManagerPlugin,
-  userManagerPlugin,
   eventManagerPlugin,
   configSectionManagerPlugin,
   nbConvertManagerPlugin,
-  terminalManagerPlugin
+  terminalManagerPlugin,
+  themesPlugin
 ];
 
 export default plugins;
@@ -330,3 +288,9 @@ export {
   ServiceType,
   IRemoteServerSettingsOptions
 } from './serversettings';
+
+// Export the polling managers
+export { RemoteKernelManager } from './kernel';
+export { RemoteKernelSpecManager } from './kernelspec';
+export { RemoteSessionManager } from './session';
+export { RemoteTerminalManager } from './terminal';
