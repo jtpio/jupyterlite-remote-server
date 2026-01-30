@@ -142,20 +142,42 @@ In this example:
 ### 3. Build and Serve JupyterLite
 
 ```bash
-# Install JupyterLite and this extension
 pip install jupyterlite-core jupyterlite-remote-server
-
-# Build the JupyterLite site
 jupyter lite build
-
-# Serve the built site
 cd _output
-python -m http.server 8000
+python -m http.server 8080
 ```
 
-Then open `http://localhost:8000/lab/` in your browser.
+Then open `http://localhost:8080/lab/` in your browser.
 
-See the `demo/` directory for a complete example configuration.
+## Demo
+
+The `demo/` directory contains a complete working example with separate servers for contents and kernels. To run it locally:
+
+```bash
+# Install the demo dependencies
+pip install -r demo/requirements.txt
+
+# Build the JupyterLite site
+cd demo
+jupyter lite build
+```
+
+Then start three terminals:
+
+```bash
+# Terminal 1 — Jupyter server for contents and other services
+jupyter server --port=8888 --ServerApp.token=my-token --ServerApp.allow_origin='*'
+
+# Terminal 2 — Jupyter server for kernels
+jupyter server --port=7777 --ServerApp.token=kernels-token --ServerApp.allow_origin='*'
+
+# Terminal 3 — JupyterLite frontend
+cd demo/_output
+python -m http.server 8080
+```
+
+Open `http://localhost:8080/lab/` in your browser.
 
 ## Plugins Provided
 

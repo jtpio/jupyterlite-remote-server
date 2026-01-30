@@ -4,6 +4,8 @@
     "appName": "JupyterLite Remote Server",
     "remoteBaseUrl": "http://localhost:8888/",
     "remoteToken": "my-token",
+    "remoteKernelsBaseUrl": "http://localhost:7777/",
+    "remoteKernelsToken": "kernels-token",
     "fullThemesUrl": "http://localhost:8080/build/themes",
     "disabledExtensions": [
       "@jupyterlite/services-extension:config-section-manager",
