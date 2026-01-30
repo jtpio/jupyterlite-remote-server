@@ -176,9 +176,6 @@ const sessionManagerPlugin: ServiceManagerPlugin<Session.IManager> = {
   }
 };
 
-
-
-
 /**
  * The event manager plugin.
  *

@@ -32,8 +32,8 @@ These options apply to all services unless overridden by service-specific option
 
 ### Theme Configuration
 
-| Option          | Description                                                                                                                                                                                                        |
-| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Option          | Description                                                                                                                                                                                                         |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `fullThemesUrl` | The full URL to the themes directory (e.g., `http://localhost:8080/build/themes`). Used by the vendored theme manager plugin to load theme CSS from the JupyterLite server instead of joining `baseUrl` with paths. |
 
 ### Service-Specific Configuration (Optional)
@@ -183,39 +183,39 @@ Open `http://localhost:8080/lab/` in your browser.
 
 This extension provides the following ServiceManagerPlugins:
 
-| Plugin                   | Token                   | Service Type    | Description                                            |
-| ------------------------ | ----------------------- | --------------- | ------------------------------------------------------ |
-| `server-settings`        | `IServerSettings`       | `default`       | Remote server connection settings                      |
-| `default-drive`          | `IDefaultDrive`         | `contents`      | Server-connected file drive                            |
-| `contents-manager`       | `IContentsManager`      | `contents`      | File contents management                               |
-| `kernel-manager`         | `IKernelManager`        | `kernels`       | Kernel lifecycle management                            |
-| `kernel-spec-manager`    | `IKernelSpecManager`    | `kernels`       | Kernel specifications with URL rewriting               |
-| `session-manager`        | `ISessionManager`       | `kernels`       | Session management                                     |
-| `event-manager`          | `IEventManager`         | `events`        | Server events                                          |
-| `config-section-manager` | `IConfigSectionManager` | `configSection` | Config section management                              |
-| `nbconvert-manager`      | `INbConvertManager`     | `nbconvert`     | Notebook conversion                                    |
-| `terminal-manager`       | `ITerminalManager`      | `terminals`     | Terminal sessions                                      |
+| Plugin                   | Token                   | Service Type    | Description                                                    |
+| ------------------------ | ----------------------- | --------------- | -------------------------------------------------------------- |
+| `server-settings`        | `IServerSettings`       | `default`       | Remote server connection settings                              |
+| `default-drive`          | `IDefaultDrive`         | `contents`      | Server-connected file drive                                    |
+| `contents-manager`       | `IContentsManager`      | `contents`      | File contents management                                       |
+| `kernel-manager`         | `IKernelManager`        | `kernels`       | Kernel lifecycle management                                    |
+| `kernel-spec-manager`    | `IKernelSpecManager`    | `kernels`       | Kernel specifications with URL rewriting                       |
+| `session-manager`        | `ISessionManager`       | `kernels`       | Session management                                             |
+| `event-manager`          | `IEventManager`         | `events`        | Server events                                                  |
+| `config-section-manager` | `IConfigSectionManager` | `configSection` | Config section management                                      |
+| `nbconvert-manager`      | `INbConvertManager`     | `nbconvert`     | Notebook conversion                                            |
+| `terminal-manager`       | `ITerminalManager`      | `terminals`     | Terminal sessions                                              |
 | `themes`                 | `IThemeManager`         | —               | Vendored theme manager reading `fullThemesUrl` from PageConfig |
 
 ## Disabled Extensions
 
 The following JupyterLite and JupyterLab plugins must be disabled in `jupyter-lite.json` to avoid conflicts with the plugins provided by this extension:
 
-| Disabled Extension                                        | Reason                                                        |
-| --------------------------------------------------------- | ------------------------------------------------------------- |
-| `@jupyterlite/services-extension:config-section-manager`  | Replaced by this extension's `config-section-manager`         |
-| `@jupyterlite/services-extension:default-drive`           | Replaced by this extension's `default-drive`                  |
-| `@jupyterlite/services-extension:event-manager`           | Replaced by this extension's `event-manager`                  |
-| `@jupyterlite/services-extension:exporters`               | Not needed with a remote server                               |
-| `@jupyterlite/services-extension:kernel-manager`          | Replaced by this extension's `kernel-manager`                 |
-| `@jupyterlite/services-extension:kernel-client`           | Not needed with a remote server                               |
-| `@jupyterlite/services-extension:kernel-spec-client`      | Not needed with a remote server                               |
-| `@jupyterlite/services-extension:kernel-spec-manager`     | Replaced by this extension's `kernel-spec-manager`            |
-| `@jupyterlite/services-extension:kernel-specs`            | Not needed with a remote server                               |
-| `@jupyterlite/services-extension:nbconvert-manager`       | Replaced by this extension's `nbconvert-manager`              |
-| `@jupyterlite/services-extension:session-manager`         | Replaced by this extension's `session-manager`                |
-| `@jupyterlite/application-extension:service-worker-manager` | Not needed with a remote server                             |
-| `@jupyterlab/apputils-extension:themes`                   | Replaced by this extension's vendored `themes` plugin         |
+| Disabled Extension                                          | Reason                                                |
+| ----------------------------------------------------------- | ----------------------------------------------------- |
+| `@jupyterlite/services-extension:config-section-manager`    | Replaced by this extension's `config-section-manager` |
+| `@jupyterlite/services-extension:default-drive`             | Replaced by this extension's `default-drive`          |
+| `@jupyterlite/services-extension:event-manager`             | Replaced by this extension's `event-manager`          |
+| `@jupyterlite/services-extension:exporters`                 | Not needed with a remote server                       |
+| `@jupyterlite/services-extension:kernel-manager`            | Replaced by this extension's `kernel-manager`         |
+| `@jupyterlite/services-extension:kernel-client`             | Not needed with a remote server                       |
+| `@jupyterlite/services-extension:kernel-spec-client`        | Not needed with a remote server                       |
+| `@jupyterlite/services-extension:kernel-spec-manager`       | Replaced by this extension's `kernel-spec-manager`    |
+| `@jupyterlite/services-extension:kernel-specs`              | Not needed with a remote server                       |
+| `@jupyterlite/services-extension:nbconvert-manager`         | Replaced by this extension's `nbconvert-manager`      |
+| `@jupyterlite/services-extension:session-manager`           | Replaced by this extension's `session-manager`        |
+| `@jupyterlite/application-extension:service-worker-manager` | Not needed with a remote server                       |
+| `@jupyterlab/apputils-extension:themes`                     | Replaced by this extension's vendored `themes` plugin |
 
 ## Requirements
 
